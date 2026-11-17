@@ -11,9 +11,9 @@
 3. Käy  luomassa API-avain, joka on vain tähän projektiin liitetty. Laita avaimen rooliksi sama rooli, minkä pistit itsellesi projektiin.
 4. Testataan CLI:n toimintaa. Varmistetaan ensin, että luomaasi projektiin on pääsy. Sitten asetetaan kyseinen projekti kehitysympäristöksi. 
     1. **Kirjaudutaan palvelimelle:** pistä `weikio login https://test.weikiolab.com` , jonka jälkeen kirjaudu sisään tunnuksillasi, tai jos CLI ei löydä selainta, syötä saamasi API-avain
-    2. **Tarkastetaan identiteetti: **pistä `weikio whoami` , joka näyttää tietoja kuten mihin projekteihin pääset käsiksi tällä avaimella
-    3. **Asetetaan kehitysympäristö: **pistä `weikio context set --project projektin-nimi` , joka asettaa luomasi projektin kehitysympäristöksi
-    4. **Näytä kontekstit: **pistä `weikio context list` , joka näyttää kaikki tallennetut kontekstit
+    2. **Tarkastetaan identiteetti:** pistä `weikio whoami` , joka näyttää tietoja kuten mihin projekteihin pääset käsiksi tällä avaimella
+    3. **Asetetaan kehitysympäristö:** pistä `weikio context set --project projektin-nimi` , joka asettaa luomasi projektin kehitysympäristöksi
+    4. **Näytä kontekstit:** pistä `weikio context list` , joka näyttää kaikki tallennetut kontekstit
 5. Luo testi-integraatiota varten Events-näkymästä uusi `Event channel`, joka ottaa tärkeimmät tapahtumat integraatio(i)lta talteen. Varmista, että tämä liitetään juuri luomaamme projektiin. Vakioasetuksiin tai koodiin ei tarvitse tehdä muutoksia. Muista myös käynnistää Event channel demoagentille luomisen jälkeen.  
   
 Tämän voi tehdä CLI:ssä tai käyttöliittymässä. CLI:n komento on tällainen:  
