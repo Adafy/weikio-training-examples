@@ -10,7 +10,7 @@ Integraation sivulta löytyy hieman tarkempi kuvaus integraation toiminnasta.
 
 Järjestelmät sekä ihmisten nimet ja henkilötunnukset ovat simuloituja.
 
-**Kysymys: **mikä aiheuttaa virheen integraatiossa?
+**Kysymys:** mikä aiheuttaa virheen integraatiossa?
 
 ### Bonustehtävä
 
