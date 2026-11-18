@@ -1,0 +1,107 @@
+# Scheduled fetch from a REST API; each comment is transformed into a todo and
+# created (POST) or updated (PATCH) in the todo API depending on whether it already exists.
+- route:
+    id: todos-example
+    from:
+      uri: timer
+      parameters:
+        timerName: poller
+        period: 60000                      # once a minute
+      steps:
+        - log:
+            message: "Started fetching comments"
+        - to:
+            uri: https
+            parameters:
+              httpUri: "{{training-api-url}}/comments?limit=5&skip=251"
+              httpMethod: GET
+        - unmarshal:                       # JSON text -> readable structure
+            json:
+              library: Jackson
+        - split:
+            expression:
+              simple:
+                expression: # TODO (1): Handle individually
+            steps:
+              - setProperty:               # a property travels with the message, separate from the body
+                  name: todoId
+                  expression:
+                    simple: ${body[id]}
+              - setBody:
+                  expression:
+                    groovy: |-
+                      def todo = [:]
+                      todo.todo = "[" + body["user"]["username"] + "] " + body["body"]
+                      // TODO (2): Set completed to true if the comment has at least 5 likes
+                      // And set userId to the comment's user id
+                      return todo
+              - marshal:                   # structure -> JSON text
+                  json:
+                    library: Jackson
+              - setProperty:               # saved, because the next request replaces the body
+                  name: todo
+                  expression:
+                    simple: ${body}
+
+              # 1) Does the todo already exist? Here 404 is an expected response, not an error.
+              - to:
+                  uri: direct
+                  parameters:
+                    name: getTodo
+
+              # 2) Create or update.
+              - removeHeaders:
+                  pattern: "*"
+              - setHeader:
+                  name: Authorization
+                  expression:
+                    simple: "Bearer {{training-api-token}}"
+              - setHeader:
+                  name: Content-Type
+                  expression:
+                    constant: "application/json"
+              - setBody:
+                  simple: ${exchangeProperty.todo}
+              - choice:
+                  when:
+                    - simple: ${true} # TODO (3): Check if the todo exists
+                      steps:
+                        - to:
+                            uri: https
+                            # TODO (4): make a POST to {{training-api-url}}/todos/add
+                        - log:
+                            message: "Todo ${exchangeProperty.todoId}: Created (POST) -> ${body}"
+                  otherwise:               # the todo exists
+                    steps:
+                      - toD:
+                          uri: https
+                          #"TODO (4): Set the PATCH method"
+                          parameters:
+                            httpUri: "{{training-api-url}}/todos/${exchangeProperty.todoId}"
+                      - log:
+                          message: "Todo ${exchangeProperty.todoId}: Updated (PATCH) -> ${body}"
+- route:
+    id: example-get-todo-route
+    from:
+      uri: direct
+      parameters:
+        name: getTodo
+      steps:
+        - removeHeaders: # Remove all headers before setting up the new request so that old values are not sent along
+            pattern: "*"
+        - setHeader:
+            name: Authorization
+            expression:
+              simple: "Bearer {{training-api-token}}"   # secret, not stored in the source code
+        - toD:                       # toD, because the address is resolved at runtime because it
+            uri: https               # contains ${...}, see https://camel.apache.org/components/4.22.x/eips/to-eip.html and https://camel.apache.org/components/4.22.x/eips/toD-eip.html
+            parameters:
+              httpUri: "{{training-api-url}}/todos/${exchangeProperty.todoId}"
+              httpMethod: GET
+              throwExceptionOnFailure: false
+        - setProperty:
+            name: lookupStatus
+            expression:
+              simple: ${header.CamelHttpResponseCode}
+        - log:
+            message: "Todo ${exchangeProperty.todoId}: lookup returned ${exchangeProperty.lookupStatus}"

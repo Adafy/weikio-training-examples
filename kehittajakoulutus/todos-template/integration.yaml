@@ -1,0 +1,4 @@
+name: todos-example
+requirements:
+  project: example
+  version: 1.0.0
